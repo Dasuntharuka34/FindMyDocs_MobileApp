@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "FindMyDocs",
+    "slug": "FindMyDocs",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dasuntharuka34.FindMyDocsApp2",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.dasuntharuka34.FindMyDocsApp2"
+    },
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "85996bf9-04a8-431d-b342-4d32e25c7368"
+      }
+    },
+    "owner": "dasuntharuka34",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ]
+  }
+}
