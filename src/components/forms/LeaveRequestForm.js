@@ -1,36 +1,22 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import React from 'react';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../../context/ThemeContext';
+import DatePicker from '../../components/ui/DatePicker';
+import Picker from '../../components/ui/Picker';
+import FileUploader from '../FileUploader';
 
 const LeaveRequestForm = ({ formData, onChange }) => {
   const { theme } = useTheme();
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+
+  const leaveReasons = [
+    { label: 'Official', value: 'official' },
+    { label: 'Personal', value: 'personal' },
+    { label: 'Illness', value: 'illness' },
+  ];
 
   const handleInputChange = (field, value) => {
     onChange(field, value);
-  };
-
-  const handleDateChange = (field, event, selectedDate) => {
-    if (field === 'startDate') setShowStartDatePicker(false);
-    if (field === 'endDate') setShowEndDatePicker(false);
-
-    if (selectedDate) {
-      onChange(field, selectedDate);
-    }
-  };
-
-  const validateDates = () => {
-    const startDate = formData?.startDate || new Date();
-    const endDate = formData?.endDate || new Date();
-    if (endDate <= startDate) {
-      Alert.alert('Error', 'End date must be after start date');
-      return false;
-    }
-    return true;
   };
 
   const formatDate = (date) => {
@@ -88,7 +74,7 @@ const LeaveRequestForm = ({ formData, onChange }) => {
 
       {/* Leave Details Section */}
       <View style={{
-        backgroundColor:  theme?.colors?.card,
+        backgroundColor: theme?.colors?.card,
         borderRadius: theme?.borderRadius?.lg || 12,
         padding: theme?.spacing?.lg || 24,
         marginBottom: theme?.spacing?.lg || 24,
@@ -124,26 +110,13 @@ const LeaveRequestForm = ({ formData, onChange }) => {
         </View>
 
         <View style={{ gap: theme?.spacing?.md || 16 }}>
-          <View style={{
-            borderWidth: 1,
-            borderColor: theme?.colors?.border || '#e5e7eb',
-            borderRadius: theme?.borderRadius?.md || 8,
-            backgroundColor: theme?.colors?.backgroundSecondary || '#f9fafb',
-          }}>
-            <Picker
-              selectedValue={formData?.reason || ''}
-              onValueChange={(value) => handleInputChange('reason', value)}
-              style={{
-                color: theme?.colors?.textPrimary || '#1f2937',
-                height: 50,
-              }}
-            >
-              <Picker.Item label="-- Select Reason --" value="" />
-              <Picker.Item label="Official" value="official" />
-              <Picker.Item label="Personal" value="personal" />
-              <Picker.Item label="Illness" value="illness" />
-            </Picker>
-          </View>
+          <Picker
+            items={leaveReasons}
+            value={formData?.reason}
+            onValueChange={(value) => handleInputChange('reason', value)}
+            placeholder="Select Reason"
+            style={{ marginBottom: 0 }}
+          />
 
           <TextInput
             style={{
@@ -168,7 +141,7 @@ const LeaveRequestForm = ({ formData, onChange }) => {
 
       {/* Date Selection Section */}
       <View style={{
-        backgroundColor:  theme?.colors?.card,
+        backgroundColor: theme?.colors?.card,
         borderRadius: theme?.borderRadius?.lg || 12,
         padding: theme?.spacing?.lg || 24,
         marginBottom: theme?.spacing?.lg || 24,
@@ -213,38 +186,14 @@ const LeaveRequestForm = ({ formData, onChange }) => {
             }}>
               Start Date *
             </Text>
-            <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderColor: theme?.colors?.border || '#e5e7eb',
-                borderRadius: theme?.borderRadius?.md || 8,
-                padding: theme?.spacing?.md || 16,
-                backgroundColor: theme?.colors?.backgroundSecondary || '#f9fafb',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-              onPress={() => setShowStartDatePicker(true)}
-            >
-              <Text style={{
-                fontSize: theme?.typography?.md?.fontSize || 16,
-                color: theme?.colors?.textPrimary || '#1f2937'
-              }}>
-                {formatDate(formData?.startDate)}
-              </Text>
-              <Icon name="calendar-today" size={20} color={theme?.colors?.textSecondary || '#6b7280'} />
-            </TouchableOpacity>
-          </View>
-
-          {showStartDatePicker && (
-            <DateTimePicker
-              value={formData?.startDate || new Date()}
-              mode="date"
-              display="default"
-              onChange={(event, date) => handleDateChange('startDate', event, date)}
+            <DatePicker
+              value={formData?.startDate ? new Date(formData.startDate) : null}
+              onChange={(date) => handleInputChange('startDate', date)}
+              placeholder="Select Start Date"
               minimumDate={new Date()}
+              style={{ marginBottom: 0 }}
             />
-          )}
+          </View>
 
           <View>
             <Text style={{
@@ -255,44 +204,20 @@ const LeaveRequestForm = ({ formData, onChange }) => {
             }}>
               End Date *
             </Text>
-            <TouchableOpacity
-              style={{
-                borderWidth: 1,
-                borderColor: theme?.colors?.border || '#e5e7eb',
-                borderRadius: theme?.borderRadius?.md || 8,
-                padding: theme?.spacing?.md || 16,
-                backgroundColor: theme?.colors?.backgroundSecondary || '#f9fafb',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-              onPress={() => setShowEndDatePicker(true)}
-            >
-              <Text style={{
-                fontSize: theme?.typography?.md?.fontSize || 16,
-                color: theme?.colors?.textPrimary || '#1f2937'
-              }}>
-                {formatDate(formData?.endDate)}
-              </Text>
-              <Icon name="calendar-today" size={20} color={theme?.colors?.textSecondary || '#6b7280'} />
-            </TouchableOpacity>
-          </View>
-
-          {showEndDatePicker && (
-            <DateTimePicker
-              value={formData?.endDate || new Date()}
-              mode="date"
-              display="default"
-              onChange={(event, date) => handleDateChange('endDate', event, date)}
-              minimumDate={formData?.startDate || new Date()}
+            <DatePicker
+              value={formData?.endDate ? new Date(formData.endDate) : null}
+              onChange={(date) => handleInputChange('endDate', date)}
+              placeholder="Select End Date"
+              minimumDate={formData?.startDate ? new Date(formData.startDate) : new Date()}
+              style={{ marginBottom: 0 }}
             />
-          )}
+          </View>
         </View>
       </View>
 
       {/* Contact Information Section */}
       <View style={{
-        backgroundColor:  theme?.colors?.card,
+        backgroundColor: theme?.colors?.card,
         borderRadius: theme?.borderRadius?.lg || 12,
         padding: theme?.spacing?.lg || 24,
         marginBottom: theme?.spacing?.xl || 32,
@@ -363,6 +288,59 @@ const LeaveRequestForm = ({ formData, onChange }) => {
             multiline
           />
         </View>
+      </View>
+
+      {/* Supporting Document Section */}
+      <View style={{
+        backgroundColor: theme?.colors?.card,
+        borderRadius: theme?.borderRadius?.lg || 12,
+        padding: theme?.spacing?.lg || 24,
+        marginBottom: theme?.spacing?.xl || 32,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3
+      }}>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: theme?.spacing?.lg || 24
+        }}>
+          <View style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: theme?.colors?.primary || '#4361ee',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: theme?.spacing?.md || 16
+          }}>
+            <Icon name="attach-file" size={16} color="#ffffff" />
+          </View>
+          <Text style={{
+            fontSize: theme?.typography?.lg?.fontSize || 18,
+            fontWeight: '600',
+            color: theme?.colors?.textPrimary || '#1f2937'
+          }}>
+            Supporting Document
+          </Text>
+        </View>
+
+        <FileUploader
+          onFileSelect={(file) => handleInputChange('supportingDocument', file)}
+          buttonText="Select Supporting Document"
+          fieldName="supportingDocument"
+          style={{ marginTop: theme?.spacing?.xs || 4 }}
+        />
+        <Text style={{
+          fontSize: theme?.typography?.xs?.fontSize || 12,
+          color: theme?.colors?.textSecondary || '#6b7280',
+          marginTop: theme?.spacing?.sm || 8,
+          fontStyle: 'italic'
+        }}>
+          Upload any relevant documents to support your leave request (e.g., medical certificate, invitation letter, etc.)
+        </Text>
       </View>
     </ScrollView>
   );

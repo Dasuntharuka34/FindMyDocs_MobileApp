@@ -63,6 +63,30 @@ export const RequestsProvider = ({ children }) => {
     }
   };
 
+  // Fetch all requests across the system (Admin only)
+  const fetchAllSystemRequests = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const [excuseData, leaveData, letterData] = await Promise.all([
+        getExcuseRequests(), // No ID fetches all
+        getLeaveRequests(),  // No ID fetches all
+        getLetters()        // No ID fetches all
+      ]);
+
+      setExcuseRequests(excuseData || []);
+      setLeaveRequests(leaveData || []);
+      setLetters(letterData || []);
+
+    } catch (err) {
+      setError(err.message || 'Failed to fetch system requests');
+      console.error('Error fetching system requests:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Fetch all pending requests for approvers
   const fetchPendingApprovals = async () => {
     setIsLoading(true);
@@ -296,22 +320,22 @@ export const RequestsProvider = ({ children }) => {
       ...letters.map(req => ({ ...req, type: 'letter' }))
     ];
 
-    return allRequests.sort((a, b) => 
+    return allRequests.sort((a, b) =>
       new Date(b.submittedDate || b.createdAt) - new Date(a.submittedDate || a.createdAt)
     );
   };
 
   // Get pending requests count
   const getPendingCount = () => {
-    const pendingExcuse = excuseRequests.filter(req => 
+    const pendingExcuse = excuseRequests.filter(req =>
       req.status !== 'Approved' && req.status !== 'Rejected'
     ).length;
 
-    const pendingLeave = leaveRequests.filter(req => 
+    const pendingLeave = leaveRequests.filter(req =>
       req.status !== 'Approved' && req.status !== 'Rejected'
     ).length;
 
-    const pendingLetters = letters.filter(req => 
+    const pendingLetters = letters.filter(req =>
       req.status !== 'Approved' && req.status !== 'Rejected'
     ).length;
 
@@ -336,9 +360,10 @@ export const RequestsProvider = ({ children }) => {
     pendingApprovals,
     isLoading,
     error,
-    
+
     // Methods
     fetchAllRequests,
+    fetchAllSystemRequests,
     fetchPendingApprovals,
     fetchExcuseRequests,
     fetchLeaveRequests,

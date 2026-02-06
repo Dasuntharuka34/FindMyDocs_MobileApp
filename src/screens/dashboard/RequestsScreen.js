@@ -67,7 +67,7 @@ const RequestsScreen = () => {
         const type = req.type?.toLowerCase() || '';
         const status = req.status?.toLowerCase() || '';
         const details = (req.reasonDetails || req.additionalDetails)?.toLowerCase() || '';
-        
+
         return (
           reason.includes(lowercasedQuery) ||
           type.includes(lowercasedQuery) ||
@@ -84,9 +84,12 @@ const RequestsScreen = () => {
   const tabs = [
     { id: 'all', label: 'All Requests' },
     { id: 'excuse', label: 'Excuse Requests' },
-    { id: 'leave', label: 'Leave Requests' },
+    { id: 'leave', label: 'Leave Requests', roles: ['Lecturer', 'HOD', 'Dean', 'VC', 'Admin'] },
     { id: 'letter', label: 'Letters' }
-  ];
+  ].filter(tab => {
+    if (!tab.roles) return true;
+    return tab.roles.includes(user?.role);
+  });
 
   const requests = getFilteredRequests();
 

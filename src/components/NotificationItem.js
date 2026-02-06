@@ -34,12 +34,22 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
 
-    if (diffInHours < 1) {
+    if (diffInSeconds < 0) {
+      return 'Just now'; // Handle clock skew
+    }
+
+    if (diffInSeconds < 60) {
       return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
     } else if (diffInHours < 24) {
       return `${diffInHours}h ago`;
+    } else if (diffInHours < 48) {
+      return 'Yesterday';
     } else {
       return date.toLocaleDateString('en-US', {
         month: 'short',
@@ -82,7 +92,7 @@ const NotificationItem = ({ notification, onMarkAsRead, onDelete }) => {
               <Icon name="check" size={18} color="#6b7280" />
             </TouchableOpacity>
           )}
-          
+
           <TouchableOpacity
             onPress={() => onDelete(notification._id)}
             style={styles.actionButton}

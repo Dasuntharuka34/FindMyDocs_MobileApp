@@ -9,6 +9,7 @@ import {
   getPendingExcuseApprovals,
   getPendingLeaveApprovals,
   getPendingLetterApprovals,
+  getAllPendingRequests,
   rejectExcuseRequest,
   rejectLeaveRequest,
   updateLetterStatus
@@ -30,38 +31,45 @@ const ApprovalQueueScreen = () => {
     try {
       setIsLoading(true);
 
-      // For admin, fetch all pending approvals by status names
-      const pendingStatuses = [
-        'Pending Lecturer Approval',
-        'Pending HOD Approval',
-        'Pending Dean Approval',
-        'Pending VC Approval'
-      ];
+      if (user?.role === 'Admin') {
+        const allPendingData = await getAllPendingRequests();
+        setExcuseRequests(allPendingData.filter(req => req.type === 'excuse') || []);
+        setLeaveRequests(allPendingData.filter(req => req.type === 'leave') || []);
+        setLetters(allPendingData.filter(req => req.type === 'letter') || []);
+      } else {
+        // For other approvers, fetch all pending approvals by status names
+        const pendingStatuses = [
+          'Pending Lecturer Approval',
+          'Pending HOD Approval',
+          'Pending Dean Approval',
+          'Pending VC Approval'
+        ];
 
-      const excusePromises = pendingStatuses.map(status =>
-        getPendingExcuseApprovals(status).catch(() => [])
-      );
-      const leavePromises = pendingStatuses.map(status =>
-        getPendingLeaveApprovals(status).catch(() => [])
-      );
-      const letterPromises = pendingStatuses.map(status =>
-        getPendingLetterApprovals(status).catch(() => [])
-      );
+        const excusePromises = pendingStatuses.map(status =>
+          getPendingExcuseApprovals(status).catch(() => [])
+        );
+        const leavePromises = pendingStatuses.map(status =>
+          getPendingLeaveApprovals(status).catch(() => [])
+        );
+        const letterPromises = pendingStatuses.map(status =>
+          getPendingLetterApprovals(status).catch(() => [])
+        );
 
-      const [excuseResults, leaveResults, letterResults] = await Promise.all([
-        Promise.all(excusePromises),
-        Promise.all(leavePromises),
-        Promise.all(letterPromises)
-      ]);
+        const [excuseResults, leaveResults, letterResults] = await Promise.all([
+          Promise.all(excusePromises),
+          Promise.all(leavePromises),
+          Promise.all(letterPromises)
+        ]);
 
-      // Flatten the results
-      const excuseData = excuseResults.flat();
-      const leaveData = leaveResults.flat();
-      const letterData = letterResults.flat();
+        // Flatten the results
+        const excuseData = excuseResults.flat();
+        const leaveData = leaveResults.flat();
+        const letterData = letterResults.flat();
 
-      setExcuseRequests(excuseData || []);
-      setLeaveRequests(leaveData || []);
-      setLetters(letterData || []);
+        setExcuseRequests(excuseData || []);
+        setLeaveRequests(leaveData || []);
+        setLetters(letterData || []);
+      }
     } catch (error) {
       console.error('Error fetching pending approvals:', error);
       Alert.alert('Error', 'Failed to load pending approvals');
@@ -112,6 +120,7 @@ const ApprovalQueueScreen = () => {
   };
 
   const canUserApprove = (request) => {
+    if (user?.role === 'Admin') return false;
     const currentStage = request.currentStageIndex;
     const requiredRole = getRequiredRoleForStage(currentStage);
     return user?.role === requiredRole;
@@ -238,7 +247,7 @@ const ApprovalQueueScreen = () => {
         <Text style={commonStyles.text(theme, 'primary', 'md')}>{item.studentName || item.name}</Text>
         <Text style={commonStyles.text(theme, 'secondary', 'sm')}>
           {item.type === 'excuse' ? 'Excuse Request' :
-           item.type === 'leave' ? 'Leave Request' : 'Letter Request'}
+            item.type === 'leave' ? 'Leave Request' : 'Letter Request'}
         </Text>
         <Text style={commonStyles.text(theme, 'secondary', 'sm')}>
           Submitted: {new Date(item.submittedAt).toLocaleDateString()}
@@ -255,35 +264,17 @@ const ApprovalQueueScreen = () => {
 
       <View style={{ flexDirection: 'row', gap: 8, marginTop: theme.spacing.md }}>
         <TouchableOpacity
-          onPress={() => handleApprove(item)}
-          style={[commonStyles.button(theme, 'success'), { padding: theme.spacing.sm }]}
+          onPress={() => viewRequestDetails(item)}
+          style={[commonStyles.button(theme, 'secondary'), { padding: theme.spacing.sm, flex: 1 }]}
         >
-          <Text style={commonStyles.buttonText(theme, 'success')}>Approve</Text>
+          <Text style={commonStyles.buttonText(theme, 'secondary')}>View Details</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => handleReject(item)}
-          style={[commonStyles.button(theme, 'error'), { padding: theme.spacing.sm }]}
+          onPress={() => viewAuditLog(item)}
+          style={[commonStyles.button(theme, 'info'), { padding: theme.spacing.sm }]}
         >
-          <Text style={commonStyles.buttonText(theme, 'error')}>Reject</Text>
+          <Text style={commonStyles.buttonText(theme, 'info')}>Audit Log</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => goToRequestApproval(item)}
-          style={[commonStyles.button(theme, 'primary'), { padding: theme.spacing.sm }]}
-        >
-          <Text style={commonStyles.buttonText(theme, 'primary')}>Go</Text>
-        </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => viewRequestDetails(item)}
-        style={[commonStyles.button(theme, 'secondary'), { padding: theme.spacing.sm }]}
-      >
-        <Text style={commonStyles.buttonText(theme, 'secondary')}>View</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => viewAuditLog(item)}
-        style={[commonStyles.button(theme, 'info'), { padding: theme.spacing.sm }]}
-      >
-        <Text style={commonStyles.buttonText(theme, 'info')}>Audit Log</Text>
-      </TouchableOpacity>
       </View>
     </View>
   );

@@ -13,6 +13,7 @@ import RegistrationRequestsScreen from '../screens/admin/RegistrationRequests';
 import SystemSettingsScreen from '../screens/admin/SystemSettingsScreen';
 import UserDetailScreen from '../screens/admin/UserDetailScreen';
 import UserManagementScreen from '../screens/admin/UserManagement';
+import AllRequestsScreen from '../screens/admin/AllRequestsScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -34,8 +35,8 @@ const AdminTabs = () => {
             iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'RegistrationRequests') {
             iconName = focused ? 'person-add' : 'person-add-outline';
-          } else if (route.name === 'ApprovalQueue') {
-            iconName = focused ? 'checkmark-circle' : 'checkmark-circle-outline';
+          } else if (route.name === 'AllRequests') {
+            iconName = focused ? 'document-text' : 'document-text-outline';
           } else if (route.name === 'AdminProfile') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -70,9 +71,9 @@ const AdminTabs = () => {
         options={{ title: 'Registrations' }}
       />
       <Tab.Screen
-        name="ApprovalQueue"
-        component={ApprovalQueueScreen}
-        options={{ title: 'Approval Queue' }}
+        name="AllRequests"
+        component={AllRequestsScreen}
+        options={{ title: 'All Requests' }}
       />
       <Tab.Screen
         name="AdminProfile"
@@ -115,6 +116,11 @@ const AdminNavigator = () => {
         name="SystemSettings"
         component={SystemSettingsScreen}
         options={{ title: 'System Settings' }}
+      />
+      <Stack.Screen
+        name="AllRequests"
+        component={AllRequestsScreen}
+        options={{ title: 'All Student Requests' }}
       />
     </Stack.Navigator>
   );

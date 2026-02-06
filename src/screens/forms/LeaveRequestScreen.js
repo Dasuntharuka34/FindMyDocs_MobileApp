@@ -10,6 +10,17 @@ const LeaveRequestScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { user } = useAuth();
   const { submitRequest, isLoading } = useRequests();
+
+  if (user?.role === 'Student') {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme?.colors?.background }}>
+        <Text style={{ color: theme?.colors?.textPrimary, fontSize: 18, textAlign: 'center', padding: 20 }}>
+          Leave requests are not available for students.
+        </Text>
+      </View>
+    );
+  }
+
   const [formData, setFormData] = useState({
     reason: '',
     reasonDetails: '',
@@ -17,6 +28,7 @@ const LeaveRequestScreen = ({ navigation }) => {
     remarks: '',
     startDate: new Date(),
     endDate: new Date(),
+    supportingDocument: null,
   });
 
   const handleFormChange = (field, value) => {

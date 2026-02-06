@@ -156,7 +156,9 @@ const DashboardScreen = ({ navigation }) => {
     setRefreshing(false);
   };
 
-  const totalRequests = excuseRequests.length + leaveRequests.length + letters.length;
+  const totalRequests = user?.role === 'Student'
+    ? excuseRequests.length + letters.length
+    : excuseRequests.length + leaveRequests.length + letters.length;
   const pendingCount = getPendingCount();
 
   if (requestsLoading) {
@@ -196,12 +198,12 @@ const DashboardScreen = ({ navigation }) => {
               <Text style={styles.statNumber}>{totalRequests}</Text>
               <Text style={styles.statLabel}>Total Requests</Text>
             </View>
-            
+
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>{pendingCount}</Text>
               <Text style={styles.statLabel}>Pending</Text>
             </View>
-            
+
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>{unreadCount}</Text>
               <Text style={styles.statLabel}>Unread</Text>
@@ -219,7 +221,7 @@ const DashboardScreen = ({ navigation }) => {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Quick Actions</Text>
-            
+
             {user?.role !== 'Admin' && (
               <TouchableOpacity
                 style={styles.quickAction}
@@ -303,7 +305,7 @@ const DashboardScreen = ({ navigation }) => {
                     </TouchableOpacity>
                   ))}
 
-                  {leaveRequests.slice(0, 2).map((request) => (
+                  {user?.role !== 'Student' && leaveRequests.slice(0, 2).map((request) => (
                     <TouchableOpacity
                       key={`leave-${request._id}`}
                       style={styles.quickAction}

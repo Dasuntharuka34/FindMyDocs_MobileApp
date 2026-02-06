@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { useRequests } from '../../context/RequestsContext';
 import { commonStyles, useTheme } from '../../context/ThemeContext';
@@ -8,6 +9,7 @@ import { getPendingRegistrations, getUsers } from '../../services/api';
 const AdminDashboardScreen = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
+  const navigation = useNavigation();
   const { excuseRequests, leaveRequests, letters, fetchAllRequests } = useRequests();
 
   const [stats, setStats] = useState({
@@ -53,12 +55,14 @@ const AdminDashboardScreen = () => {
         return isPending && canApprove;
       }).length;
 
+      const approvedRequests = allRequests.filter(request => request.status === 'Approved').length;
       const totalRequests = allRequests.length;
 
       setStats({
         totalUsers,
         pendingRegistrations,
         pendingApprovals,
+        approvedRequests,
         totalRequests
       });
 
@@ -111,20 +115,12 @@ const AdminDashboardScreen = () => {
       screen: 'RegistrationRequests'
     },
     {
-      id: 'approvals',
-      title: 'Approval Queue',
-      subtitle: `${stats.pendingApprovals} pending`,
-      icon: '✅',
-      color: 'success',
-      screen: 'ApprovalQueue'
-    },
-    {
       id: 'requests',
       title: 'All Requests',
       subtitle: `${stats.totalRequests} total requests`,
       icon: '📄',
       color: 'info',
-      screen: 'Requests'
+      screen: 'AllRequests'
     }
   ];
 
@@ -132,8 +128,13 @@ const AdminDashboardScreen = () => {
     <TouchableOpacity
       style={[commonStyles.card(theme), { marginBottom: theme.spacing.md }]}
       onPress={() => {
-        // Navigation will be handled by parent navigator
-        Alert.alert('Navigate', `Navigate to ${item.screen}`);
+        if (item.screen === 'ApprovalQueue') {
+          navigation.navigate('ApprovalQueue');
+        } else if (item.screen === 'AllRequests') {
+          navigation.navigate('AllRequests');
+        } else {
+          navigation.navigate(item.screen);
+        }
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -245,8 +246,8 @@ const AdminDashboardScreen = () => {
             <Text style={styles.statLabel}>Pending Registrations</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{stats.pendingApprovals}</Text>
-            <Text style={styles.statLabel}>Pending Approvals</Text>
+            <Text style={styles.statNumber}>{stats.approvedRequests}</Text>
+            <Text style={styles.statLabel}>Approved Requests</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statNumber}>{stats.totalRequests}</Text>

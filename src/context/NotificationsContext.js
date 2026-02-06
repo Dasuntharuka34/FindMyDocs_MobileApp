@@ -1,10 +1,11 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import {
   getNotifications,
   markNotificationAsRead,
   deleteNotification,
   deleteAllNotifications
 } from '../services/api';
+import { useAuth } from './AuthContext';
 
 const NotificationsContext = createContext();
 
@@ -21,6 +22,26 @@ export const NotificationsProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const { user } = useAuth();
+
+  // Polling Effect
+  useEffect(() => {
+    let intervalId = null;
+
+    if (user?._id) {
+      // Fetch immediately on mount or user change
+      fetchNotifications(user._id, true);
+
+      // Setup interval for polling every 30 seconds
+      intervalId = setInterval(() => {
+        fetchNotifications(user._id, true);
+      }, 30000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [user?._id]);
 
   // Calculate unread count whenever notifications change
   useEffect(() => {
@@ -29,13 +50,13 @@ export const NotificationsProvider = ({ children }) => {
   }, [notifications]);
 
   // Fetch notifications for a user
-  const fetchNotifications = async (userId) => {
+  const fetchNotifications = useCallback(async (userId, background = false) => {
     if (!userId) {
       setError('User ID is required');
       return;
     }
 
-    setIsLoading(true);
+    if (!background) setIsLoading(true);
     setError(null);
 
     try {
@@ -45,8 +66,20 @@ export const NotificationsProvider = ({ children }) => {
       setError(err.message || 'Failed to fetch notifications');
       console.error('Error fetching notifications:', err);
     } finally {
-      setIsLoading(false);
+      if (!background) setIsLoading(false);
     }
+  }, []);
+
+  // Setup polling
+  const startPolling = (userId) => {
+    if (!userId) return null;
+
+    // Poll every 30 seconds
+    const intervalId = setInterval(() => {
+      fetchNotifications(userId, true);
+    }, 30000);
+
+    return intervalId;
   };
 
   // Mark a notification as read
@@ -56,11 +89,11 @@ export const NotificationsProvider = ({ children }) => {
 
     try {
       const updatedNotification = await markNotificationAsRead(notificationId);
-      
+
       // Update local state
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification._id === notificationId 
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification._id === notificationId
             ? { ...notification, read: true }
             : notification
         )
@@ -85,7 +118,7 @@ export const NotificationsProvider = ({ children }) => {
     try {
       // Get all unread notifications
       const unreadNotifications = notifications.filter(notification => !notification.read);
-      
+
       // Mark each unread notification as read
       const markPromises = unreadNotifications.map(notification =>
         markNotificationAsRead(notification._id)
@@ -116,7 +149,7 @@ export const NotificationsProvider = ({ children }) => {
 
     try {
       await deleteNotification(notificationId);
-      
+
       // Update local state
       setNotifications(prev =>
         prev.filter(notification => notification._id !== notificationId)
@@ -145,7 +178,7 @@ export const NotificationsProvider = ({ children }) => {
 
     try {
       await deleteAllNotifications(userId);
-      
+
       // Clear local state
       setNotifications([]);
 
@@ -196,7 +229,7 @@ export const NotificationsProvider = ({ children }) => {
     isLoading,
     error,
     unreadCount,
-    
+
     // Methods
     fetchNotifications,
     markAsRead,
@@ -208,7 +241,8 @@ export const NotificationsProvider = ({ children }) => {
     getUnreadNotifications,
     getReadNotifications,
     clearError,
-    refreshNotifications
+    refreshNotifications,
+    startPolling
   };
 
   return (

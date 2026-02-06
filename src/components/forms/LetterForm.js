@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTheme } from '../../context/ThemeContext';
+import DatePicker from '../../components/ui/DatePicker';
 
 const LetterForm = ({ formData, onChange }) => {
   const { theme } = useTheme();
@@ -13,8 +14,8 @@ const LetterForm = ({ formData, onChange }) => {
   return (
     <ScrollView style={{
       flex: 1,
-      backgroundColor: theme?.colors?.background || '#ffffff',
-      padding: theme?.spacing?.lg || 24
+      backgroundColor: theme?.colors?.background,
+      padding: theme?.spacing?.sm || 24
     }}>
       {/* Header */}
       <View style={{
@@ -52,7 +53,7 @@ const LetterForm = ({ formData, onChange }) => {
 
       {/* Letter Type Section */}
       <View style={{
-        backgroundColor: '#ffffff',
+        backgroundColor: theme?.colors?.card,
         borderRadius: theme?.borderRadius?.lg || 12,
         padding: theme?.spacing?.lg || 24,
         marginBottom: theme?.spacing?.lg || 24,
@@ -136,7 +137,7 @@ const LetterForm = ({ formData, onChange }) => {
 
       {/* Subject/Reason Section */}
       <View style={{
-        backgroundColor: '#ffffff',
+        backgroundColor: theme?.colors?.card,
         borderRadius: theme?.borderRadius?.lg || 12,
         padding: theme?.spacing?.lg || 24,
         marginBottom: theme?.spacing?.lg || 24,
@@ -207,20 +208,17 @@ const LetterForm = ({ formData, onChange }) => {
             }}>
               Date
             </Text>
-            <TextInput
-              style={{
-                borderWidth: 1,
-                borderColor: theme?.colors?.border || '#e5e7eb',
-                borderRadius: theme?.borderRadius?.md || 8,
-                padding: theme?.spacing?.md || 16,
-                fontSize: theme?.typography?.md?.fontSize || 16,
-                backgroundColor: theme?.colors?.backgroundSecondary || '#f9fafb',
-                color: theme?.colors?.textPrimary || '#1f2937'
+            <DatePicker
+              value={formData?.date ? new Date(formData.date) : null}
+              onChange={(date) => {
+                if (date) {
+                  const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+                  const formattedDate = localDate.toISOString().split('T')[0];
+                  handleInputChange('date', formattedDate);
+                }
               }}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={theme?.colors?.textSecondary || '#6b7280'}
-              value={formData?.date || ''}
-              onChangeText={(text) => handleInputChange('date', text)}
+              placeholder="Select Date"
+              style={{ marginBottom: 0 }}
             />
           </View>
         </View>
@@ -228,7 +226,7 @@ const LetterForm = ({ formData, onChange }) => {
 
       {/* Additional Details Section */}
       <View style={{
-        backgroundColor: '#ffffff',
+        backgroundColor: theme?.colors?.card,
         borderRadius: theme?.borderRadius?.lg || 12,
         padding: theme?.spacing?.lg || 24,
         marginBottom: theme?.spacing?.xl || 32,

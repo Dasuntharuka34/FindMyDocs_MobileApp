@@ -236,7 +236,8 @@ export const createExcuseRequest = async (requestData) => {
 
 export const getExcuseRequests = async (userId) => {
   try {
-    const response = await api.get(`/excuserequests/byUser/${userId}`);
+    const url = userId ? `/excuserequests/byUser/${userId}` : '/excuserequests';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to fetch excuse requests');
@@ -312,7 +313,11 @@ export const createLeaveRequest = async (requestData) => {
       // Append all text fields
       Object.keys(requestData).forEach(key => {
         if (key !== 'supportingDocument') {
-          formData.append(key, requestData[key]);
+          let value = requestData[key];
+          if (value instanceof Date) {
+            value = value.toISOString();
+          }
+          formData.append(key, value);
         }
       });
 
@@ -323,7 +328,7 @@ export const createLeaveRequest = async (requestData) => {
         const match = /\.(\w+)$/.exec(filename);
         const type = match ? `application/${match[1]}` : 'application/octet-stream';
 
-        formData.append('supportingDocument', {
+        formData.append('leaveForm', {
           uri: file.uri,
           name: filename,
           type: type,
@@ -349,7 +354,8 @@ export const createLeaveRequest = async (requestData) => {
 
 export const getLeaveRequests = async (userId) => {
   try {
-    const response = await api.get(`/leaverequests/byUser/${userId}`);
+    const url = userId ? `/leaverequests/byUser/${userId}` : '/leaverequests';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to fetch leave requests');
@@ -452,7 +458,8 @@ export const createLetter = async (letterData) => {
 
 export const getLetters = async (userId) => {
   try {
-    const response = await api.get(`/letters/byUser/${userId}`);
+    const url = userId ? `/letters/byUser/${userId}` : '/letters';
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || 'Failed to fetch letters');

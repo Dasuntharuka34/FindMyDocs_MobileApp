@@ -7,7 +7,7 @@ import { commonStyles, useTheme } from '../../context/ThemeContext';
 
 const NotificationsScreen = () => {
   const { user } = useAuth();
-  const { notifications, unreadCount, isLoading, fetchNotifications, markAllAsRead, deleteAllUserNotifications } = useNotifications();
+  const { notifications, unreadCount, isLoading, fetchNotifications, markAsRead, markAllAsRead, deleteSingleNotification, deleteAllUserNotifications } = useNotifications();
   const { theme } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState('all');
@@ -180,7 +180,13 @@ const NotificationsScreen = () => {
 
       <FlatList
         data={filteredNotifications}
-        renderItem={({ item }) => <NotificationItem notification={item} />}
+        renderItem={({ item }) => (
+          <NotificationItem
+            notification={item}
+            onMarkAsRead={markAsRead}
+            onDelete={deleteSingleNotification}
+          />
+        )}
         keyExtractor={(item) => item._id}
         refreshControl={
           <RefreshControl

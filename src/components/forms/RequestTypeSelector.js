@@ -1,10 +1,12 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 const RequestTypeSelector = ({ navigation }) => {
   const { theme } = useTheme();
+  const { user } = useAuth();
 
   const requestTypes = [
     {
@@ -21,7 +23,8 @@ const RequestTypeSelector = ({ navigation }) => {
       description: 'For personal leave and time off requests',
       icon: 'beach-access',
       color: theme?.colors?.secondary || '#f72585',
-      screen: 'LeaveRequest'
+      screen: 'LeaveRequest',
+      roles: ['Lecturer', 'HOD', 'Dean', 'VC', 'Admin']
     },
     {
       id: 'letter',
@@ -31,7 +34,10 @@ const RequestTypeSelector = ({ navigation }) => {
       color: theme?.colors?.info || '#3b82f6',
       screen: 'LetterRequest'
     }
-  ];
+  ].filter(type => {
+    if (!type.roles) return true;
+    return type.roles.includes(user?.role);
+  });
 
   const handleTypeSelect = (type) => {
     navigation.navigate(type.screen);
@@ -155,8 +161,8 @@ const RequestTypeSelector = ({ navigation }) => {
             </View>
 
             {/* Content */}
-            <View style={{ 
-              alignItems: 'center', 
+            <View style={{
+              alignItems: 'center',
               flex: 1,
               width: '100%',
               backgroundColor: `${type.color}05`,
